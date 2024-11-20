@@ -411,27 +411,21 @@ def common_table_expr(node, output):
     output.print_name(node.ctename)
     if node.aliascolnames:
         with output.expression(True):
-            if len(node.aliascolnames) > 1:
-                output.space(2)
             output.print_name(node.aliascolnames, ',')
     output.swrite('AS')
     cte_materialize_printer(node.ctematerialized, node, output)
     # See https://github.com/lelit/pglast/issues/163: the "forced" space will happen only in
     # the RawStream, that otherwise would not emit it before the opening paren of the
     # expression. The IndentedStream ignores the `force` argument.
-    output.space(force=True)
-    with output.push_indent(2, False):
-        with output.expression(True):
-            output.newline()
-            with output.push_indent(2):
-                output.print_node(node.ctequery)
-            output.newline()
-        if node.search_clause:
-            output.newline()
-            output.print_node(node.search_clause)
-        if node.cycle_clause:
-            output.newline()
-            output.print_node(node.cycle_clause)
+    output.space(1, force=True)
+    with output.expression(True):
+        output.print_node(node.ctequery)
+    if node.search_clause:
+        output.newline()
+        output.print_node(node.search_clause)
+    if node.cycle_clause:
+        output.newline()
+        output.print_node(node.cycle_clause)
     output.newline()
 
 
@@ -492,7 +486,8 @@ def copy_stmt(node, output):
                      or option.defname == 'format' and option.arg.sval == 'csv')):
                     value = 'CSV'
                 elif option.defname == 'force_quote':
-                    value = 'FORCE QUOTE ' + output._concat_nodes(option.arg, are_names=True)
+                    value = 'FORCE QUOTE ' + \
+                        output._concat_nodes(option.arg, are_names=True)
                 elif option.defname in ('delimiter', 'escape', 'quote'):
                     value = f"{option.defname.upper()} AS '{option.arg.sval}'"
                 else:
@@ -636,14 +631,16 @@ class FetchDirectionPrinter(IntEnumPrinter):
             output.write('NEXT')
         else:
             output.write('FORWARD')
-            output.swrite('ALL' if node.howMany == LONG_MAX else str(node.howMany))
+            output.swrite('ALL' if node.howMany ==
+                          LONG_MAX else str(node.howMany))
 
     def FETCH_BACKWARD(self, node, output):
         if node.howMany == 1:
             output.write('PRIOR')
         else:
             output.write('BACKWARD')
-            output.swrite('ALL' if node.howMany == LONG_MAX else str(node.howMany))
+            output.swrite('ALL' if node.howMany ==
+                          LONG_MAX else str(node.howMany))
 
     def FETCH_ABSOLUTE(self, node, output):
         if node.howMany == 1:
@@ -1843,7 +1840,8 @@ def sort_by(node, output):
     sbn = enums.SortByNulls
     if node.sortby_nulls != sbn.SORTBY_NULLS_DEFAULT:
         output.swrite('NULLS ')
-        output.write('FIRST' if node.sortby_nulls == sbn.SORTBY_NULLS_FIRST else 'LAST')
+        output.write('FIRST' if node.sortby_nulls ==
+                     sbn.SORTBY_NULLS_FIRST else 'LAST')
 
 
 class SQLValueFunctionOpPrinter(IntEnumPrinter):
@@ -2118,7 +2116,8 @@ def type_name(node, output):
                      or len(node.typmods) > 1
                      or node.typmods[0].val.ival != 1)):
                     with output.expression(True):
-                        output.print_list(node.typmods, ',', standalone_items=False)
+                        output.print_list(node.typmods, ',',
+                                          standalone_items=False)
         output.write(suffix)
         if node.arrayBounds:
             for ab in node.arrayBounds:
@@ -2235,8 +2234,9 @@ def window_def(node, output):
                     output.writes('UNBOUNDED PRECEDING')
                 elif fo & enums.FRAMEOPTION_START_UNBOUNDED_FOLLOWING:  # pragma: no cover
                     # Disallowed
-                    #output.writes('UNBOUNDED FOLLOWING')
-                    raise RuntimeError('Unexpected "UNBOUNDED FOLLOWING" disallowed option')
+                    # output.writes('UNBOUNDED FOLLOWING')
+                    raise RuntimeError(
+                        'Unexpected "UNBOUNDED FOLLOWING" disallowed option')
                 elif fo & enums.FRAMEOPTION_START_CURRENT_ROW:
                     output.writes('CURRENT ROW')
                 elif fo & enums.FRAMEOPTION_START_OFFSET_PRECEDING:
@@ -2249,8 +2249,9 @@ def window_def(node, output):
                     output.writes('AND')
                     if fo & enums.FRAMEOPTION_END_UNBOUNDED_PRECEDING:  # pragma: no cover
                         # Disallowed
-                        #output.writes('UNBOUNDED PRECEDING')
-                        raise RuntimeError('Unexpected "UNBOUNDED PRECEDING" disallowed option')
+                        # output.writes('UNBOUNDED PRECEDING')
+                        raise RuntimeError(
+                            'Unexpected "UNBOUNDED PRECEDING" disallowed option')
                     elif fo & enums.FRAMEOPTION_END_UNBOUNDED_FOLLOWING:
                         output.writes('UNBOUNDED FOLLOWING')
                     elif fo & enums.FRAMEOPTION_END_CURRENT_ROW:
