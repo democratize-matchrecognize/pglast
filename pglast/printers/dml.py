@@ -419,7 +419,10 @@ def common_table_expr(node, output):
     # expression. The IndentedStream ignores the `force` argument.
     output.space(1, force=True)
     with output.expression(True):
-        output.print_node(node.ctequery)
+        output.newline()
+        with output.push_indent(amount=2, relative=False):
+            output.print_node(node.ctequery)
+        output.newline()
     if node.search_clause:
         output.newline()
         output.print_node(node.search_clause)
