@@ -1719,8 +1719,6 @@ def select_stmt(node, output):
             output.write('WITH ')
             output.print_node(node.withClause)
             output.newline()
-            output.space(2)
-            output.indent()
 
         so = enums.SetOperation
 
@@ -1818,9 +1816,6 @@ def select_stmt(node, output):
             output.newline()
             output.write('FOR ')
             output.print_list(node.lockingClause)
-
-        if node.withClause:
-            output.dedent()
 
 
 @node_printer(ast.SetToDefault)
