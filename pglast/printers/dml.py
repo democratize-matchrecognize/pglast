@@ -2190,11 +2190,10 @@ def unlisten_stmt(node, output):
 
 @node_printer(ast.WithClause)
 def with_clause(node, output):
-    with output.push_indent(-2):
-        if node.recursive:
-            output.write('RECURSIVE')
-            output.newline()
-            output.space(2)
+    if node.recursive:
+        output.write('RECURSIVE ')
+    output.newline()
+    with output.push_indent(amount=2, relative=False):
         output.print_list(node.ctes)
 
 
