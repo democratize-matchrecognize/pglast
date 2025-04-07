@@ -247,12 +247,12 @@ def bool_expr(node, output):
     bet = enums.BoolExprType
     in_res_target = isinstance(node.ancestors[0], ast.ResTarget)
     if node.boolop == bet.AND_EXPR:
-        relindent = -4 if not in_res_target else None
-        output.print_list(node.args, 'AND', relative_indent=relindent,
+        relindent = -5 if not in_res_target else None
+        output.print_list(node.args, 'AND ', relative_indent=relindent,
                           item_needs_parens=_bool_expr_needs_to_be_wrapped_in_parens)
     elif node.boolop == bet.OR_EXPR:
-        relindent = -3 if not in_res_target else None
-        output.print_list(node.args, 'OR', relative_indent=relindent,
+        relindent = -4 if not in_res_target else None
+        output.print_list(node.args, 'OR ', relative_indent=relindent,
                           item_needs_parens=_bool_expr_needs_to_be_wrapped_in_parens)
     else:
         output.writes('NOT')
@@ -306,8 +306,7 @@ def case_expr(node, output):
         output.writes('CASE')
         if node.arg:
             output.print_node(node.arg)
-        output.newline()
-        output.space(2)
+            output.newline()
         with output.push_indent():
             output.print_list(node.args, '')
             if node.defresult:
@@ -321,8 +320,14 @@ def case_expr(node, output):
 @node_printer(ast.CaseWhen)
 def case_when(node, output):
     output.write('WHEN ')
-    with output.push_indent(-3):
-        output.print_node(node.expr)
+    output.print_node(node.expr)
+    if isinstance(node.expr, ast.A_Const) and isinstance(node.expr.val, ast.Integer) \
+            and isinstance(node.result, ast.A_Const) \
+            and isinstance(node.result.val, ast.String) \
+            and len(node.result.val.sval) < 10:
+        output.write('THEN ')
+        output.print_node(node.result)
+    else:
         output.newline()
         output.write('THEN ')
         output.print_node(node.result)
@@ -1770,11 +1775,11 @@ def select_stmt(node, output):
                 output.print_node(node.intoClause)
             if node.fromClause:
                 output.newline()
-                output.write('FROM ')
+                output.write('FROM   ')
                 output.print_list(node.fromClause)
             if node.whereClause:
                 output.newline()
-                output.write('WHERE ')
+                output.write('WHERE  ')
                 output.print_node(node.whereClause)
             if node.groupClause:
                 output.newline()
